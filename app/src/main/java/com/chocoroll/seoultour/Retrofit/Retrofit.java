@@ -12,9 +12,18 @@ import retrofit.http.POST;
  */
 public interface Retrofit {
     public static final String ROOT = "http://seoultour.dothome.co.kr";
-    @POST("/login/login.php")
-    public void login(@Body JsonObject info, Callback<String> callback);
-    @POST("/listview/categorylist.php")
-    public void getDealList(@Body JsonObject info, Callback<JsonArray> callback);
+
+    @POST("/getStampList.php")
+    public void getStampList(@Body JsonObject info, Callback<JsonArray> callback);
+
+    @POST("/getStamp.php")
+    public void getStamp(@Body JsonObject info, Callback<String> callback);
+    @POST("/checkStamp.php")
+    public void checkStamp(@Body JsonObject info, Callback<String> callback);
+
+    @POST("/getGuestBook.php")
+    public void getGuestBook(@Body JsonObject info, Callback<JsonArray> callback);
+    @POST("/sendGuestBook.php")
+    public void sendGuestBook(@Body JsonObject info, Callback<String> callback);
 
 }
