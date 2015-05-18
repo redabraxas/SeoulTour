@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -85,6 +86,14 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
         setContentView(R.layout.activity_main);
 
 
+        Button btnProgress = (Button) findViewById(R.id.btnProgress);
+        btnProgress.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ProgressActivity.class);
+                startActivity(intent);
+            }
+        });
 
         listView = (ListView)findViewById(R.id.listView);
         mAdapter= new TourAdapter(this, R.layout.model_tour, tourList);
@@ -225,6 +234,7 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
     @Override
     public void setMapTour(double x, double y) {
 
+        Log.e("pos", String.valueOf(x)+"  "+String.valueOf(y));
         // 마커 위치로 이동하며 확대
         LatLng pos = new LatLng(x,y);
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 16));
@@ -241,7 +251,7 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
         dialog.setCancelable(false);
         dialog.show();
 
-        // 투어리스트를 가져와서 슬라이딩 드로워로 띄운다.
+        // 투어를 가져와서 슬라이딩 드로워로 띄운다.
 
 
 
@@ -268,7 +278,7 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
         ((Button)findViewById(R.id.btnGuestBook)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GuestBookDialog dialog = new GuestBookDialog(getApplicationContext(),curCode, tour.getContentID());
+                GuestBookDialog dialog = new GuestBookDialog(MainActivity.this,curCode, tour.getContentID());
                 dialog.show();
 
             }

@@ -33,6 +33,13 @@
                 android:typeface="serif"
                 android:text="@string/app_name" />
         </FrameLayout>
+
+        <Button
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            android:text="진행상황"
+            android:id="@+id/btnProgress"
+         />
     </LinearLayout>
 
 
