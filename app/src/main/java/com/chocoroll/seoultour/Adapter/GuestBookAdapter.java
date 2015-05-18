@@ -3,6 +3,7 @@ package com.chocoroll.seoultour.Adapter;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,13 +38,13 @@ public class GuestBookAdapter extends ArrayAdapter<GuestBook> {
         View v = convertView;
         if (v == null) {
             LayoutInflater vi = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            v = vi.inflate(R.layout.model_tour, null);
+            v = vi.inflate(R.layout.model_guestbook, null);
         }
         final GuestBook p = items.get(position);
         if (p != null) {
 
             ((TextView)  v.findViewById(R.id.name)).setText(p.getName());
-            ((TextView)  v.findViewById(R.id.date)).setText(p.getDate());
+            ((TextView)  v.findViewById(R.id.mydate)).setText(p.getDate());
             ((TextView)  v.findViewById(R.id.content)).setText(p.getContent());
 
         }

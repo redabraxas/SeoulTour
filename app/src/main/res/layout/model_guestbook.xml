@@ -21,7 +21,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="날짜"
-            android:id="@+id/date"
+            android:id="@+id/mydate"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
@@ -31,7 +31,7 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#ff9d8e0f"></LinearLayout>
+        android:background="#fffffbca"></LinearLayout>
 
     <TextView
         android:padding="10dp"

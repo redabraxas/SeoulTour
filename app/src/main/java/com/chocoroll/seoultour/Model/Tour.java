@@ -4,20 +4,24 @@ package com.chocoroll.seoultour.Model;
  * Created by RA on 2015-05-13.
  */
 public class Tour {
-    private  String name;
-    private   String thumbnail;
-    private   double mapx, mapy;
-    private   String contentID;
-    private  String contentTypeID;
+    private String name;
+    private String thumbnail;
+    private double mapx, mapy;
+    private String contentID;
+    private String contentTypeID;
     private String overView;
+    private String addr;
+    private String tel;
 
-    public Tour(String name, String thumbnail, double mapx, double mapy, String contentID, String contentTypeID){
+    public Tour(String name, String thumbnail, double mapx, double mapy, String contentID, String contentTypeID, String addr, String tel){
         this.name = name;
         this.thumbnail =thumbnail;
         this.mapx = mapx;
         this.mapy = mapy;
         this.contentID = contentID;
         this.contentTypeID = contentTypeID;
+        this.addr =addr;
+        this.tel = tel;
 
     }
     public void setOverView(String overview){
@@ -46,5 +50,17 @@ public class Tour {
 
     public String getOverView() {
         return overView;
+    }
+
+    public String getAddr() {
+        return addr;
+    }
+
+    public String getContentTypeID() {
+        return contentTypeID;
+    }
+
+    public String getTel() {
+        return tel;
     }
 }

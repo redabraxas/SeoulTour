@@ -1,5 +1,6 @@
 package com.chocoroll.seoultour.Main;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -59,7 +60,7 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 
-public class MainActivity extends ActionBarActivity implements TourAdapter.tourAdapterListner{
+public class MainActivity extends Activity implements TourAdapter.tourAdapterListner{
 
     ProgressDialog dialog;
 
@@ -82,7 +83,7 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
 
 
@@ -126,7 +127,6 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
         // 기본맵 셋팅
         map = ((MapFragment)getFragmentManager()
                 .findFragmentById(R.id.map)).getMap();
-//        map.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
         map.setMyLocationEnabled(true);
         UiSettings uiSettings = map.getUiSettings();
         uiSettings.setZoomControlsEnabled(true);
@@ -147,8 +147,7 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
             is.read(buffer);
             is.close();
             result = new String(buffer, "utf-8");
-//            JSONObject json = new JSONObject(result);
-//            JSONArray jsonArray = json.getJSONArray(result);
+
             JSONArray jsonArray = new JSONArray(result);
             for(int i=0; i< jsonArray.length(); i++){
                 JSONObject json = jsonArray.getJSONObject(i);
@@ -165,6 +164,14 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
         } catch (Exception e) {
         }
 
+        makeDistrictMarker();
+
+
+        dialog.dismiss();
+    }
+
+
+    void makeDistrictMarker(){
         // 각 구에 마커찍기
         for(int i=0; i<districtList.size(); i++){
             District district = districtList.get(i);
@@ -175,8 +182,8 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
             options.title(district.getName());
             options.snippet(district.getCode());
             map.addMarker(options);
-
         }
+
 
 
         // 마커 클릭 리스너
@@ -189,12 +196,10 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
 
                 // 마커 위치로 이동하며 확대
                 LatLng pos = new LatLng(marker.getPosition().latitude, marker.getPosition().longitude);
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 17));
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 18));
                 return false;
             }
         });
-
-        dialog.dismiss();
     }
 
     void setMapTourList(String code){
@@ -207,11 +212,6 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
         dialog.show();
 
         curCode = code;
-        tourList.clear();
-
-
-
-        // 여기서 구 code를 통해 관광지 리스트 정보를 모두 가져와서 추가한다.
 
         // 요청할 API     / 지역코드 조회:areaCode / 지역기반 관광정보 조회:areaBasedList / 공통정보 조회:detailCommon
         String url;
@@ -234,9 +234,8 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
     @Override
     public void setMapTour(double x, double y) {
 
-        Log.e("pos", String.valueOf(x)+"  "+String.valueOf(y));
         // 마커 위치로 이동하며 확대
-        LatLng pos = new LatLng(x,y);
+        LatLng pos = new LatLng(x, y);
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 16));
 
     }
@@ -244,16 +243,11 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
     @Override
     public void showDetailTour(final Tour tour) {
 
-        Log.e("showDetailTour", tour.getName());
         dialog = new ProgressDialog(this);
         dialog.setMessage("관광지 정보를 가져오는 중입니다...");
         dialog.setIndeterminate(true);
         dialog.setCancelable(false);
         dialog.show();
-
-        // 투어를 가져와서 슬라이딩 드로워로 띄운다.
-
-
 
 
         // 이미지 띄우기
@@ -268,7 +262,8 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
         ((Button)findViewById(R.id.btnStamp)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                StampDialog dialog = new StampDialog(MainActivity.this, curCode, tour.getContentID());
+                StampDialog dialog = new StampDialog(MainActivity.this, curCode, districtList.get(Integer.valueOf(curCode)-1).getName(),
+                        tour.getContentID(), tour.getName());
                 dialog.show();
             }
         });
@@ -283,6 +278,16 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
 
             }
         });
+
+        // 주소 띄우기
+        ((TextView) findViewById(R.id.tour_addr)).setText(tour.getAddr());
+
+        // 전화번호 띄우기
+        ((TextView) findViewById(R.id.tour_tel)).setText(tour.getTel());
+
+        // 소개 띄우기
+        ((TextView) findViewById(R.id.tour_overview)).setText(tour.getOverView());
+
 
 
         dialog.dismiss();
@@ -340,7 +345,7 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
                 boolean bSet = false;
                 String s_tag = "";
 
-                String contentID="", thumbnail = "", addr="", tel="", overview="", title="", contentTypeID="";
+                String contentID="", thumbnail = "", addr="", tel="", title="", contentTypeID="";
                 Double mapx = 0.0, mapy=0.0;
 
 
@@ -352,11 +357,9 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
                         ;
                     } else if (eventType == XmlPullParser.START_TAG) {
                         String tag_name = xpp.getName();
-                        Log.e("tag_name", tag_name);
                         // 태그가 name 혹은 address인 경우 set을 true로
                         for(int i=0; i<tag.length; i++)
                             if (tag_name.equals(tag[i])) {
-                                Log.e("tag_length", String.valueOf(tag.length));
                                 bSet = true;
                                 s_tag = tag[i];
                                 break;
@@ -370,7 +373,6 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
                             switch (s_tag) {
                                 case "contentid":
                                     contentID = data;
-                                    Log.e("contentid",contentID);
                                     break;
                                 case "addr1":
                                     addr = data;
@@ -405,7 +407,7 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
 
                         String tag_name=xpp.getName();
                         if(tag_name.equals("item")){
-                            tourList.add(new Tour(title, thumbnail, mapx, mapy, contentID, contentTypeID));
+                            tourList.add(new Tour(title, thumbnail,mapy,mapx, contentID, contentTypeID, addr, tel));
                         }
 
                     }
@@ -418,18 +420,22 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
 
 
 
+            map.clear();
+            makeDistrictMarker();
 
             // 각 관광지에에 마커찍기
             for(int i=0; i<tourList.size(); i++){
 
                 Tour tour = tourList.get(i);
-                Log.e("pos", String.valueOf(tour.getMapx()) + "    " + String.valueOf(tour.getMapy()) );
+
                 LatLng pos = new LatLng(tour.getMapx(), tour.getMapy());
+
+
                 MarkerOptions options = new MarkerOptions();
                 options.position(pos);
                 options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
                 options.title(tour.getName());
-
+                map.addMarker(options);
 
                 String url;
                 url = "http://api.visitkorea.or.kr/openapi/service/rest/KorService/detailCommon?";
@@ -439,7 +445,6 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
 
                 new DownloadWebPageTask2().execute(url, String.valueOf(i));
 
-                map.addMarker(options);
             }
 
 
@@ -489,7 +494,6 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
 
         @Override
         protected void onPostExecute(String result) {
-
             try {
                 // 파서 생성
                 XmlPullParserFactory factory = XmlPullParserFactory.newInstance();

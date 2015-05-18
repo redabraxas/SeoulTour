@@ -16,6 +16,7 @@
             android:layout_marginLeft="5dp"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:src="@drawable/logo"
             android:scaleType="fitXY"/>
         <FrameLayout
             android:layout_gravity="center"
@@ -61,7 +62,7 @@
 
         <ListView
             android:layout_weight="1"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="0dp"
             android:id="@+id/listView"
             />
@@ -87,62 +88,133 @@
 
         <LinearLayout
             android:id="@+id/drawerContent"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:orientation="vertical" >
-
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <LinearLayout
-                android:background="#ffffff"
-                android:orientation="horizontal"
-                android:layout_margin="20dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:padding="10dp">
+                android:orientation="vertical"
+                android:layout_margin="20dp"
+                android:background="#ffffff">
 
-                <ImageView
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:id="@+id/thumbnailDetail" />
 
                 <LinearLayout
-                    android:orientation="vertical"
+                    android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center">
+                    android:layout_height="wrap_content"
+                    android:padding="20dp"
+                    >
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="어디구 무슨관광지"
-                        android:textSize="20dp"
-                        android:id="@+id/tourTitle" />
+
+                    <ImageView
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:id="@+id/thumbnailDetail" />
 
                     <LinearLayout
-                        android:orientation="horizontal"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        >
+                        android:orientation="vertical"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_horizontal">
 
-                        <Button
-                            style="?android:attr/buttonStyleSmall"
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="어디구 무슨관광지"
+                            android:textSize="20dp"
+                            android:id="@+id/tourTitle" />
+
+                        <LinearLayout
+                            android:orientation="horizontal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="방명록 보기"
-                            android:id="@+id/btnGuestBook"
-                            android:layout_margin="5dp"/>
+                            >
 
-                        <Button
-                            style="?android:attr/buttonStyleSmall"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="스탬프 찍기"
-                            android:id="@+id/btnStamp"
-                            android:layout_margin="5dp"/>
+                            <Button
+                                style="?android:attr/buttonStyleSmall"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="방명록 보기"
+                                android:id="@+id/btnGuestBook"
+                                android:layout_margin="5dp"/>
+
+                            <Button
+                                style="?android:attr/buttonStyleSmall"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="스탬프 찍기"
+                                android:id="@+id/btnStamp"
+                                android:layout_margin="5dp"/>
+                        </LinearLayout>
                     </LinearLayout>
+
                 </LinearLayout>
 
+                <ScrollView
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal">
+
+                    <TableLayout
+                        android:layout_margin="40dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <TableRow>
+                            <TextView
+                                android:layout_weight="1"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:text="주소"/>
+                            <TextView
+                                android:layout_weight="3"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:text="주소값"
+                                android:id="@+id/tour_addr"/>
+                        </TableRow>
+
+                        <TableRow>
+                            <TextView
+                                android:layout_weight="1"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:text="전화번호"/>
+                            <TextView
+                                android:layout_weight="3"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:autoLink="phone"
+                                android:text="주소값"
+                                android:id="@+id/tour_tel"/>
+                        </TableRow>
+
+                        <TableRow>
+                            <TextView
+                                android:layout_weight="1"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:text="소개"/>
+                            <TextView
+                                android:layout_weight="3"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:text="주소값"
+                                android:id="@+id/tour_overview"/>
+                        </TableRow>
+
+                    </TableLayout>
+
+
+
+                </ScrollView>
+
             </LinearLayout>
+
+
 
         </LinearLayout>
 

@@ -23,6 +23,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import retrofit.Callback;
 import retrofit.RestAdapter;
@@ -58,6 +59,7 @@ public class GuestBookDialog extends Dialog {
         setContentView(R.layout.dialog_guestbook);
 
 
+        setTitle("방명록 쓰기");
 
         listView = (ListView)findViewById(R.id.listViewGuestBook);
 
@@ -65,7 +67,7 @@ public class GuestBookDialog extends Dialog {
         mAdapter= new GuestBookAdapter(context, R.layout.model_guestbook, guestBookList);
 
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        listView.setDivider(new ColorDrawable(Color.YELLOW));
+        listView.setDivider(new ColorDrawable(Color.DKGRAY));
         listView.setDividerHeight(1);
 
 
@@ -128,6 +130,7 @@ public class GuestBookDialog extends Dialog {
 
                             }
 
+                            Collections.reverse(guestBookList);
                             listView.setAdapter(mAdapter);
                         }
 
@@ -192,9 +195,43 @@ public class GuestBookDialog extends Dialog {
 
                         @Override
                         public void success(String result, Response response) {
-
                             dialog.dismiss();
-                            getGuestBook();
+
+                            if(result.equals("success")){
+                                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                                builder.setTitle("작성 성공")        // 제목 설정
+                                        .setMessage("방명록을 성공적으로 작성하셨습니다.")        // 메세지 설정
+                                        .setCancelable(false)        // 뒤로 버튼 클릭시 취소 가능 설정
+                                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                            // 확인 버튼 클릭시 설정
+                                            public void onClick(DialogInterface dialog, int whichButton) {
+
+                                                ((EditText)findViewById(R.id.editname)).setText("");
+                                                ((EditText)findViewById(R.id.editcontent)).setText("");
+
+                                            }
+                                        });
+
+                                AlertDialog dialog = builder.create();    // 알림창 객체 생성
+                                dialog.show();    // 알림창 띄우기
+
+                                getGuestBook();
+                            }else{
+                                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                                builder.setTitle("작성 실패")        // 제목 설정
+                                        .setMessage("방명록 작성을 실패하셨습니다.")        // 메세지 설정
+                                        .setCancelable(false)        // 뒤로 버튼 클릭시 취소 가능 설정
+                                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                            // 확인 버튼 클릭시 설정
+                                            public void onClick(DialogInterface dialog, int whichButton) {
+                                            }
+                                        });
+
+                                AlertDialog dialog = builder.create();    // 알림창 객체 생성
+                                dialog.show();    // 알림창 띄우기
+                            }
+
+
 
                         }
 

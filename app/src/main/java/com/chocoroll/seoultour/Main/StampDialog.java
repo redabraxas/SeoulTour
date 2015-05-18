@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import com.chocoroll.seoultour.R;
@@ -28,15 +29,19 @@ public class StampDialog extends Dialog {
 
     Context context;
     String code;
+    String districtName;
     String contentID;
+    String tourName;
 
     ImageView imageStamp;
 
-    public StampDialog(Context context, String code, String contentID) {
+    public StampDialog(Context context, String code, String name, String contentID, String tourName) {
         super(context);
         this.context = context;
         this.code= code;
+        this.districtName = name;
         this.contentID = contentID;
+        this.tourName = tourName;
     }
 
     @Override
@@ -44,16 +49,18 @@ public class StampDialog extends Dialog {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_stamp);
 
+        setTitle(districtName+" > "+tourName);
 
         imageStamp = (ImageView) findViewById(R.id.imageStamp);
-        imageStamp.setTag(0,"done");
+        imageStamp.setTag(R.string.stamp_state, "ready");
+
         getStamp();
 
         imageStamp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if(imageStamp.getTag(0).equals("done")){
+                if(imageStamp.getTag(R.string.stamp_state).equals("done")){
                     dialog.dismiss();
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -85,11 +92,12 @@ public class StampDialog extends Dialog {
         dialog.show();
 
 
-        TelephonyManager telephony = (TelephonyManager)getOwnerActivity().getSystemService(Context.TELEPHONY_SERVICE);
+        TelephonyManager telephony = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
         String phoneID = telephony.getDeviceId();    //device id
 
         final JsonObject info = new JsonObject();
         info.addProperty("code",code);
+        info.addProperty("name",districtName);
         info.addProperty("contentID",contentID);
         info.addProperty("phoneID",phoneID);
 
@@ -109,20 +117,37 @@ public class StampDialog extends Dialog {
 
                             dialog.dismiss();
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                            builder.setTitle("스탬프 찍기 성공")        // 제목 설정
-                                    .setMessage("스탬프를 찍으셨어요~")        // 메세지 설정
-                                    .setCancelable(false)        // 뒤로 버튼 클릭시 취소 가능 설정
-                                    .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                                        // 확인 버튼 클릭시 설정
-                                        public void onClick(DialogInterface dialog, int whichButton) {
-                                        }
-                                    });
-                            AlertDialog dialog = builder.create();    // 알림창 객체 생성
-                            dialog.show();    // 알림창 띄우기
+                            if(result.equals("success")){
 
-                            imageStamp.setImageResource(R.drawable.stampred);
-                            imageStamp.setTag(0,"done");
+                                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                                builder.setTitle("스탬프 찍기 성공")        // 제목 설정
+                                        .setMessage("스탬프를 찍으셨어요~")        // 메세지 설정
+                                        .setCancelable(false)        // 뒤로 버튼 클릭시 취소 가능 설정
+                                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                            // 확인 버튼 클릭시 설정
+                                            public void onClick(DialogInterface dialog, int whichButton) {
+                                            }
+                                        });
+                                AlertDialog dialog = builder.create();    // 알림창 객체 생성
+                                dialog.show();    // 알림창 띄우기
+
+                                imageStamp.setImageResource(R.drawable.stampred);
+                                imageStamp.setTag(R.string.stamp_state, "done");
+                            }else{
+                                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                                builder.setTitle("스탬프 찍기 실패")        // 제목 설정
+                                        .setMessage("네트워크 오류로 스탬프를 찍기 실패했어요")        // 메세지 설정
+                                        .setCancelable(false)        // 뒤로 버튼 클릭시 취소 가능 설정
+                                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                            // 확인 버튼 클릭시 설정
+                                            public void onClick(DialogInterface dialog, int whichButton) {
+                                            }
+                                        });
+                                AlertDialog dialog = builder.create();    // 알림창 객체 생성
+                                dialog.show();    // 알림창 띄우기
+
+                            }
+
 
 
                         }
@@ -189,12 +214,12 @@ public class StampDialog extends Dialog {
                         public void success(final String result, Response response) {
 
                             dialog.dismiss();
-                            if (result.equals("true")) {
+                            if (result.equals("done")) {
                                 imageStamp.setImageResource(R.drawable.stampred);
-                                imageStamp.setTag(0, "done");
+                                imageStamp.setTag(R.string.stamp_state, "done");
                             } else {
                                 imageStamp.setImageResource(R.drawable.stampgray);
-                                imageStamp.setTag(0, "ready");
+                                imageStamp.setTag(R.string.stamp_state, "ready");
                             }
 
 
