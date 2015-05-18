@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.ImageView;
 import com.chocoroll.seoultour.R;
@@ -26,10 +27,10 @@ public class StampDialog extends Dialog {
 
 
     Context context;
-
-
     String code;
     String contentID;
+
+    ImageView imageStamp;
 
     public StampDialog(Context context, String code, String contentID) {
         super(context);
@@ -44,12 +45,31 @@ public class StampDialog extends Dialog {
         setContentView(R.layout.dialog_stamp);
 
 
-        ImageView imageStamp = (ImageView) findViewById(R.id.imageStamp);
+        imageStamp = (ImageView) findViewById(R.id.imageStamp);
+        imageStamp.setTag(0,"done");
+        getStamp();
+
         imageStamp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                checkStamp();
+                if(imageStamp.getTag(0).equals("done")){
+                    dialog.dismiss();
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                    builder.setTitle("스탬프 찍기 실패")        // 제목 설정
+                            .setMessage("이미 스탬프를 찍으셨어요~")        // 메세지 설정
+                            .setCancelable(false)        // 뒤로 버튼 클릭시 취소 가능 설정
+                            .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                // 확인 버튼 클릭시 설정
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                }
+                            });
+                    AlertDialog dialog = builder.create();    // 알림창 객체 생성
+                    dialog.show();    // 알림창 띄우기
+                }else{
+                    checkStamp();
+                }
 
             }
         });
@@ -65,10 +85,13 @@ public class StampDialog extends Dialog {
         dialog.show();
 
 
+        TelephonyManager telephony = (TelephonyManager)getOwnerActivity().getSystemService(Context.TELEPHONY_SERVICE);
+        String phoneID = telephony.getDeviceId();    //device id
+
         final JsonObject info = new JsonObject();
         info.addProperty("code",code);
         info.addProperty("contentID",contentID);
-        info.addProperty("phoneID","");
+        info.addProperty("phoneID",phoneID);
 
 
         new Thread(new Runnable() {
@@ -85,6 +108,22 @@ public class StampDialog extends Dialog {
                         public void success(String result, Response response) {
 
                             dialog.dismiss();
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                            builder.setTitle("스탬프 찍기 성공")        // 제목 설정
+                                    .setMessage("스탬프를 찍으셨어요~")        // 메세지 설정
+                                    .setCancelable(false)        // 뒤로 버튼 클릭시 취소 가능 설정
+                                    .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                        // 확인 버튼 클릭시 설정
+                                        public void onClick(DialogInterface dialog, int whichButton) {
+                                        }
+                                    });
+                            AlertDialog dialog = builder.create();    // 알림창 객체 생성
+                            dialog.show();    // 알림창 띄우기
+
+                            imageStamp.setImageResource(R.drawable.stampred);
+                            imageStamp.setTag(0,"done");
+
 
                         }
 
@@ -115,4 +154,77 @@ public class StampDialog extends Dialog {
 
     }
 
+
+
+
+    void getStamp(){
+
+        dialog = new ProgressDialog(context);
+        dialog.setMessage("스탬프를 정보를 가져오는 중입니다...");
+        dialog.setIndeterminate(true);
+        dialog.setCancelable(false);
+        dialog.show();
+
+        TelephonyManager telephony = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
+        String phoneID = telephony.getDeviceId();    //device id
+
+        final JsonObject info = new JsonObject();
+        info.addProperty("code", code);
+        info.addProperty("contentID",contentID);
+        info.addProperty("phoneID",phoneID);
+
+
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+
+                    RestAdapter restAdapter = new RestAdapter.Builder()
+                            .setEndpoint(Retrofit.ROOT)  //call your base url
+                            .build();
+                    Retrofit sendreport = restAdapter.create(Retrofit.class); //this is how retrofit create your api
+                    sendreport.getStamp(info, new Callback<String>() {
+
+                        @Override
+                        public void success(final String result, Response response) {
+
+                            dialog.dismiss();
+                            if (result.equals("true")) {
+                                imageStamp.setImageResource(R.drawable.stampred);
+                                imageStamp.setTag(0, "done");
+                            } else {
+                                imageStamp.setImageResource(R.drawable.stampgray);
+                                imageStamp.setTag(0, "ready");
+                            }
+
+
+                        }
+
+                        @Override
+                        public void failure(RetrofitError retrofitError) {
+                            dialog.dismiss();
+                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                            builder.setTitle("네트워크가 불안정합니다.")        // 제목 설정
+                                    .setMessage("네트워크를 확인해주세요")        // 메세지 설정
+                                    .setCancelable(false)        // 뒤로 버튼 클릭시 취소 가능 설정
+                                    .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                        // 확인 버튼 클릭시 설정
+                                        public void onClick(DialogInterface dialog, int whichButton) {
+                                        }
+                                    });
+
+                            AlertDialog dialog = builder.create();    // 알림창 객체 생성
+                            dialog.show();    // 알림창 띄우기
+
+                        }
+                    });
+                }
+                catch (Throwable ex) {
+
+                }
+            }
+        }).start();
+
+
+    }
 }

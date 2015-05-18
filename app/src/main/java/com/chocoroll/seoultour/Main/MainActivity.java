@@ -11,8 +11,10 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -36,9 +38,16 @@ import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -54,10 +63,10 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
     ProgressDialog dialog;
 
 
-    ArrayList<District> districtList;
+    ArrayList<District> districtList= new ArrayList<District>();;
     GoogleMap map;
     ListView listView;
-    ArrayList<Tour> tourList;
+    ArrayList<Tour> tourList  = new ArrayList<Tour>();
     TourAdapter mAdapter;
     String curCode;
 
@@ -65,18 +74,19 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
     SlidingDrawer slidingDrawer;
     Button slideHandleButton;
 
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //requestWindowFeature();
+//        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
-
-        mapInit();
 
 
 
         listView = (ListView)findViewById(R.id.listView);
-        tourList = new ArrayList<Tour>();
         mAdapter= new TourAdapter(this, R.layout.model_tour, tourList);
 
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -88,19 +98,9 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
         slideHandleButton = (Button) findViewById(R.id.slideHandleButton);
         slidingDrawer = (SlidingDrawer) findViewById(R.id.SlidingDrawer);
         slidingDrawer.bringToFront();
-        slidingDrawer.setOnDrawerOpenListener(new SlidingDrawer.OnDrawerOpenListener() {
-            @Override
-            public void onDrawerOpened() {
-            }
-        });
-
-        slidingDrawer.setOnDrawerCloseListener(new SlidingDrawer.OnDrawerCloseListener() {
-            @Override
-            public void onDrawerClosed() {
-            }
-        });
 
 
+        mapInit();
 
     }
 
@@ -117,20 +117,18 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
         // 기본맵 셋팅
         map = ((MapFragment)getFragmentManager()
                 .findFragmentById(R.id.map)).getMap();
-        map.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+//        map.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
         map.setMyLocationEnabled(true);
         UiSettings uiSettings = map.getUiSettings();
         uiSettings.setZoomControlsEnabled(true);
 
         // 서울 중앙으로 카메라 이동
-        double latitude =0;
-        double longitude =0;
+        double latitude =37.538153;
+        double longitude =126.988177;
         LatLng Loc = new LatLng(latitude, longitude);
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(Loc, 16));
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(Loc, 12));
 
         // 서울 각 구를 불러와서 리스트에 추가
-        districtList = new ArrayList<District>();
-
         String file = "district.json";
         String result = "";
         try {
@@ -140,12 +138,13 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
             is.read(buffer);
             is.close();
             result = new String(buffer, "utf-8");
-            JSONObject json = new JSONObject(result);
-            JSONArray jsonArray = json.getJSONArray("DESCRIPTION");
+//            JSONObject json = new JSONObject(result);
+//            JSONArray jsonArray = json.getJSONArray(result);
+            JSONArray jsonArray = new JSONArray(result);
             for(int i=0; i< jsonArray.length(); i++){
-                json = jsonArray.getJSONObject(i);
+                JSONObject json = jsonArray.getJSONObject(i);
                 // 시군구 코드
-                String code = json.getString("SIG_CD");
+                String code = json.getString("OBJECTID");
                 // 이름
                 String name = json.getString("SIG_KOR_NM");
                 // 위도
@@ -181,7 +180,7 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
 
                 // 마커 위치로 이동하며 확대
                 LatLng pos = new LatLng(marker.getPosition().latitude, marker.getPosition().longitude);
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 16));
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 17));
                 return false;
             }
         });
@@ -191,6 +190,7 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
 
     void setMapTourList(String code){
 
+
         dialog = new ProgressDialog(this);
         dialog.setMessage("구의 관광지를 가져오는 중입니다...");
         dialog.setIndeterminate(true);
@@ -199,31 +199,25 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
 
         curCode = code;
         tourList.clear();
+
+
+
         // 여기서 구 code를 통해 관광지 리스트 정보를 모두 가져와서 추가한다.
 
+        // 요청할 API     / 지역코드 조회:areaCode / 지역기반 관광정보 조회:areaBasedList / 공통정보 조회:detailCommon
+        String url;
+        url = "http://api.visitkorea.or.kr/openapi/service/rest/KorService/";
+        url += "areaBasedList?";
+        //인증키
+        url += "ServiceKey=gm3kVO0YC2KCvStmz2Ljk%2FRRhLwLNOdNcAuW%2Fdsv9uUOHAFWDyFcmwAfXiLbJa4lmQQ5D778Q619jgPmG8kdNg%3D%3D";
+        //서울(areaCode=1)과 시군구코드정보(sigunguCode) 입력
+        url += "&areaCode=1&sigunguCode="+code+"&numOfRows=30&pageNo=1";
+        //기기 OS, 프로그램 이름
+        url += "&MobileOS=ETC&MobileApp=Testing";
+
+        new DownloadWebPageTask().execute(url);
 
 
-
-
-
-
-
-
-        listView.setVisibility(View.VISIBLE);
-        mAdapter.notifyDataSetChanged();
-
-        // 각 관광지에에 마커찍기
-        for(int i=0; i<tourList.size(); i++){
-            Tour tour = tourList.get(i);
-            LatLng pos = new LatLng(tour.getMapx(), tour.getMapy());
-            MarkerOptions options = new MarkerOptions();
-            options.position(pos);
-            options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-            options.title(tour.getName());
-            map.addMarker(options);
-        }
-
-        dialog.dismiss();
 
     }
 
@@ -240,6 +234,7 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
     @Override
     public void showDetailTour(final Tour tour) {
 
+        Log.e("showDetailTour", tour.getName());
         dialog = new ProgressDialog(this);
         dialog.setMessage("관광지 정보를 가져오는 중입니다...");
         dialog.setIndeterminate(true);
@@ -252,26 +247,8 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
 
 
         // 이미지 띄우기
-        Bitmap bit = null;
-        try {
-            //웹사이트에 접속 (사진이 있는 주소로 접근)
-            URL Url = new URL(tour.getThumbnail());
-            // 웹사이트에 접속 설정
-            URLConnection urlcon = Url.openConnection();
-            // 연결하시오
-            urlcon.connect();
-            // 이미지 길이 불러옴
-            int imagelength = urlcon.getContentLength();
-            // 스트림 클래스를 이용하여 이미지를 불러옴
-            BufferedInputStream bis = new BufferedInputStream(urlcon.getInputStream(), imagelength);
-            // 스트림을 통하여 저장된 이미지를 이미지 객체에 넣어줌
-            bit = BitmapFactory.decodeStream(bis);
-            bis.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        ((ImageView) findViewById(R.id.thumbnailDetail)).setImageBitmap(bit);
-
+        new DownloadImageTask((ImageView) findViewById(R.id.thumbnailDetail))
+                .execute(tour.getThumbnail());
 
         // 관광지 띄우기
         String str = "["+tour.getName()+"]";
@@ -281,7 +258,8 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
         ((Button)findViewById(R.id.btnStamp)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getStamp(tour.getContentID());
+                StampDialog dialog = new StampDialog(MainActivity.this, curCode, tour.getContentID());
+                dialog.show();
             }
         });
 
@@ -302,118 +280,246 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
     }
 
 
-    void getStamp(final String contentID){
+    // AsyncTask클래스  // html문서 파싱하기 _ 소스 text로 얻어오기
+    public class DownloadWebPageTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... urls) {   // 메인 실행 단계
+            try {
+                return (String) downloadUrl((String) urls[0]);
+            } catch (IOException e) {
+                return "다운로드 실패";
+            }
+        }
 
-        dialog = new ProgressDialog(MainActivity.this);
-        dialog.setMessage("스탬프를 정보를 가져오는 중입니다...");
-        dialog.setIndeterminate(true);
-        dialog.setCancelable(false);
-        dialog.show();
+        private String downloadUrl(String myurl) throws IOException {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(myurl);   // 입력된 url
+                conn = (HttpURLConnection) url.openConnection(); // 리소스 연결
+                BufferedInputStream buf = new BufferedInputStream(conn.getInputStream());   // byte단위로 저장
+                BufferedReader bufreader = new BufferedReader(new InputStreamReader(buf, "utf-8")); // 문자 단위로 변환
+                String line = null;
+                String page = "";
+                while ((line = bufreader.readLine()) != null) {   // 문자를 줄단위로
+                    page += line;
+                }
+                return page;
+            } finally {
+                conn.disconnect();
+            }
+        }
 
-        final JsonObject info = new JsonObject();
-        info.addProperty("code",curCode);
-        info.addProperty("contentID",contentID);
-        info.addProperty("phoneID","");
-//        regist task1 = new regist();
-//        task1.execute(this);
+        @Override
+        protected void onPostExecute(String result) {
 
-        new Thread(new Runnable() {
-            public void run() {
-                try {
+            tourList.clear();
 
-                    RestAdapter restAdapter = new RestAdapter.Builder()
-                            .setEndpoint(Retrofit.ROOT)  //call your base url
-                            .build();
-                    Retrofit sendreport = restAdapter.create(Retrofit.class); //this is how retrofit create your api
-                    sendreport.checkStamp(info, new Callback<String>() {
 
-                        @Override
-                        public void success(final String result, Response response) {
+            String[] tag = {"contentid", "title", "addr1", "mapx", "mapy", "tel", "contenttypeid", "firstimage2"};
 
-                            dialog.dismiss();
-                            if (result.equals("true")) {
-                                AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
-                                builder.setTitle("스탬프 찍기 실패")        // 제목 설정
-                                        .setMessage("이미 스탬프를 찍으셨어요~")        // 메세지 설정
-                                        .setCancelable(false)        // 뒤로 버튼 클릭시 취소 가능 설정
-                                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                                            // 확인 버튼 클릭시 설정
-                                            public void onClick(DialogInterface dialog, int whichButton) {
-                                            }
-                                        });
-                                AlertDialog dialog = builder.create();    // 알림창 객체 생성
-                                dialog.show();    // 알림창 띄우기
-                            } else {
-                                StampDialog dialog = new StampDialog(getApplicationContext(), curCode, contentID);
-                                dialog.show();
+
+            try {
+                // 파서 생성
+                XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+                factory.setNamespaceAware(true);
+                XmlPullParser xpp = factory.newPullParser();
+                xpp.setInput(new StringReader(result));
+
+                // 이벤트 가져오기
+                int eventType = xpp.getEventType();
+                boolean bSet = false;
+                String s_tag = "";
+
+                String contentID="", thumbnail = "", addr="", tel="", overview="", title="", contentTypeID="";
+                Double mapx = 0.0, mapy=0.0;
+
+
+                while (eventType != XmlPullParser.END_DOCUMENT) {
+
+
+                    if (eventType == XmlPullParser.START_DOCUMENT) {
+
+                        ;
+                    } else if (eventType == XmlPullParser.START_TAG) {
+                        String tag_name = xpp.getName();
+                        Log.e("tag_name", tag_name);
+                        // 태그가 name 혹은 address인 경우 set을 true로
+                        for(int i=0; i<tag.length; i++)
+                            if (tag_name.equals(tag[i])) {
+                                Log.e("tag_length", String.valueOf(tag.length));
+                                bSet = true;
+                                s_tag = tag[i];
+                                break;
+                            }
+
+                    } else if (eventType == XmlPullParser.TEXT) {
+
+                        if (bSet) {
+                            String data = xpp.getText();
+
+                            switch (s_tag) {
+                                case "contentid":
+                                    contentID = data;
+                                    Log.e("contentid",contentID);
+                                    break;
+                                case "addr1":
+                                    addr = data;
+                                    break;
+                                case "mapx":
+                                    mapx = Double.parseDouble(data);
+                                    break;
+                                case "mapy":
+                                    mapy = Double.parseDouble(data);
+                                    break;
+                                case "tel":
+                                    tel = data;
+                                    break;
+                                case "firstimage2":
+                                    thumbnail = data;
+                                    break;
+                                case "title":
+                                    title = data;
+                                    break;
+                                case "contenttypeid":
+                                    contentTypeID = data;
+                                    break;
+                                default:
+                                    break;
+
                             }
 
 
+                            bSet = false;
+                        }
+                    } else if (eventType == XmlPullParser.END_TAG) {
 
+                        String tag_name=xpp.getName();
+                        if(tag_name.equals("item")){
+                            tourList.add(new Tour(title, thumbnail, mapx, mapy, contentID, contentTypeID));
                         }
 
-                        @Override
-                        public void failure(RetrofitError retrofitError) {
-                            dialog.dismiss();
-                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                            builder.setTitle("네트워크가 불안정합니다.")        // 제목 설정
-                                    .setMessage("네트워크를 확인해주세요")        // 메세지 설정
-                                    .setCancelable(false)        // 뒤로 버튼 클릭시 취소 가능 설정
-                                    .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                                        // 확인 버튼 클릭시 설정
-                                        public void onClick(DialogInterface dialog, int whichButton) {
-                                        }
-                                    });
-
-                            AlertDialog dialog = builder.create();    // 알림창 객체 생성
-                            dialog.show();    // 알림창 띄우기
-
-                        }
-                    });
-                }
-                catch (Throwable ex) {
-
+                    }
+                    eventType = xpp.next();
                 }
             }
-        }).start();
+            catch (Exception e) {
+                Log.e("Exception", e.getMessage());
+            }
 
 
+
+
+            // 각 관광지에에 마커찍기
+            for(int i=0; i<tourList.size(); i++){
+
+                Tour tour = tourList.get(i);
+                Log.e("pos", String.valueOf(tour.getMapx()) + "    " + String.valueOf(tour.getMapy()) );
+                LatLng pos = new LatLng(tour.getMapx(), tour.getMapy());
+                MarkerOptions options = new MarkerOptions();
+                options.position(pos);
+                options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                options.title(tour.getName());
+
+
+                String url;
+                url = "http://api.visitkorea.or.kr/openapi/service/rest/KorService/detailCommon?";
+                url += "ServiceKey=gm3kVO0YC2KCvStmz2Ljk%2FRRhLwLNOdNcAuW%2Fdsv9uUOHAFWDyFcmwAfXiLbJa4lmQQ5D778Q619jgPmG8kdNg%3D%3D";
+                url += "&contentId=" + tour.getContentID() + "&overviewYN=Y";
+                url += "&MobileOS=ETC&MobileApp=Testing";
+
+                new DownloadWebPageTask2().execute(url, String.valueOf(i));
+
+                map.addMarker(options);
+            }
+
+
+
+            listView.setVisibility(View.VISIBLE);
+            listView.setAdapter(mAdapter);
+            dialog.dismiss();
+
+
+
+
+
+
+
+        }
     }
+    public class DownloadWebPageTask2 extends AsyncTask<String, Void, String> {
+        int index = 0;
 
-//
-//    // 처음 실행 시 기기 아이디를 등록한다!!
-//    public class regist extends AsyncTask<Context, Integer , String> {
-//
-//        @Override
-//        protected String doInBackground(Context... params) {
-//            // TODO Auto-generated method stub
-//            String regId;
-//
-//            GCMRegistrar.checkDevice(params[0]);
-//            GCMRegistrar.checkManifest(params[0]);
-//
-//            regId = GCMRegistrar.getRegistrationId(params[0]);
-//
-//            if (regId.equals("")) {
-//                GCMRegistrar.register(params[0], PROJECT_ID);
-//                regId = GCMRegistrar.getRegistrationId(params[0]);
-//            }
-//
-//            return regId;
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String result) {
-//            // TODO Auto-generated method stub
-//            super.onPostExecute(result);
-//
-//            registPhoneId(result);
-//
-//        }
-//
-//    }
+        @Override
+        protected String doInBackground(String... urls) {   // 메인 실행 단계
+            try {
+                index = Integer.valueOf(urls[1]);
+                return (String) downloadUrl((String) urls[0]);
+            } catch (IOException e) {
+                return "다운로드 실패";
+            }
+        }
 
+        private String downloadUrl(String myurl) throws IOException {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(myurl);   // 입력된 url
+                conn = (HttpURLConnection) url.openConnection(); // 리소스 연결
+                BufferedInputStream buf = new BufferedInputStream(conn.getInputStream());   // byte단위로 저장
+                BufferedReader bufreader = new BufferedReader(new InputStreamReader(buf, "utf-8")); // 문자 단위로 변환
+                String line = null;
+                String page = "";
+                while ((line = bufreader.readLine()) != null) {   // 문자를 줄단위로
+                    page += line;
+                }
+                return page;
+            } finally {
+                conn.disconnect();
+            }
+        }
 
+        @Override
+        protected void onPostExecute(String result) {
+
+            try {
+                // 파서 생성
+                XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+                factory.setNamespaceAware(true);
+                XmlPullParser xpp = factory.newPullParser();
+                xpp.setInput(new StringReader(result));
+
+                // 이벤트 가져오기
+                int eventType = xpp.getEventType();
+                boolean bSet = false;
+
+                while (eventType != XmlPullParser.END_DOCUMENT) {
+                    if (eventType == XmlPullParser.START_DOCUMENT) {
+                        ;
+                    } else if (eventType == XmlPullParser.START_TAG) {
+                        String tag_name = xpp.getName();
+                        // 태그가 name 혹은 address인 경우 set을 true로
+                        if (tag_name.equals("overview"))
+                            bSet = true;
+                    } else if (eventType == XmlPullParser.TEXT) {
+                        if (bSet) {
+                            String data = xpp.getText();
+
+                            tourList.get(index).setOverView(data);
+
+                            bSet = false;
+
+                        }
+                    } else if (eventType == XmlPullParser.END_TAG) {
+                        ;
+                    }
+                    eventType = xpp.next();
+                }
+            }
+            catch (Exception e) {
+                Log.e("Exception", e.getMessage());
+            }
+
+        }
+    }
 
 
     @SuppressWarnings("deprecation")
@@ -424,6 +530,32 @@ public class MainActivity extends ActionBarActivity implements TourAdapter.tourA
         } else {
 
             super.onBackPressed();
+        }
+    }
+
+
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
         }
     }
 

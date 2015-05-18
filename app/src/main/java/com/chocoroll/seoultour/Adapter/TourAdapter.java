@@ -3,6 +3,8 @@ package com.chocoroll.seoultour.Adapter;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +17,7 @@ import com.chocoroll.seoultour.Model.Tour;
 import com.chocoroll.seoultour.R;
 
 import java.io.BufferedInputStream;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -47,25 +50,9 @@ public class TourAdapter extends ArrayAdapter<Tour> {
         if (p != null) {
 
             // 웹 이미지 띄우기
-            Bitmap bit = null;
-            try {
-                //웹사이트에 접속 (사진이 있는 주소로 접근)
-                URL Url = new URL(p.getThumbnail());
-                // 웹사이트에 접속 설정
-                URLConnection urlcon = Url.openConnection();
-                // 연결하시오
-                urlcon.connect();
-                // 이미지 길이 불러옴
-                int imagelength = urlcon.getContentLength();
-                // 스트림 클래스를 이용하여 이미지를 불러옴
-                BufferedInputStream bis = new BufferedInputStream(urlcon.getInputStream(), imagelength);
-                // 스트림을 통하여 저장된 이미지를 이미지 객체에 넣어줌
-                bit = BitmapFactory.decodeStream(bis);
-                bis.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            ((ImageView) v.findViewById(R.id.thumbnail)).setImageBitmap(bit);
+            new DownloadImageTask((ImageView) v.findViewById(R.id.thumbnail))
+                    .execute(p.getThumbnail());
+
 
             // 이름 띄우기
             String str = "["+p.getName()+"]";
@@ -80,7 +67,7 @@ public class TourAdapter extends ArrayAdapter<Tour> {
             });
 
             // 상세보기
-            ((Button)v.findViewById(R.id.btnPos)).setOnClickListener(new View.OnClickListener() {
+            ((Button)v.findViewById(R.id.btnDetail)).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     ((tourAdapterListner)context).showDetailTour(p);
@@ -90,5 +77,32 @@ public class TourAdapter extends ArrayAdapter<Tour> {
         return v;
     }
 
+
+
+
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
+    }
 
 }

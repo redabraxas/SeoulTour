@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -75,10 +76,7 @@ public class GuestBookDialog extends Dialog {
                 String name = ((EditText)findViewById(R.id.editname)).getText().toString();
                 String content = ((EditText)findViewById(R.id.editcontent)).getText().toString();
 
-                JsonObject info = new JsonObject();
-                info.addProperty("name",name);
-                info.addProperty("content",content);
-                sendGuestBook(info);
+                sendGuestBook(name, content);
 
 
 
@@ -102,7 +100,7 @@ public class GuestBookDialog extends Dialog {
         final JsonObject info = new JsonObject();
         info.addProperty("code",code);
         info.addProperty("contentID",contentID);
-        sendGuestBook(info);
+
 
 
         new Thread(new Runnable() {
@@ -164,7 +162,7 @@ public class GuestBookDialog extends Dialog {
 
 
 
-    void sendGuestBook(final JsonObject info){
+    void sendGuestBook(String name, String content){
 
 
         dialog = new ProgressDialog(context);
@@ -172,6 +170,14 @@ public class GuestBookDialog extends Dialog {
         dialog.setIndeterminate(true);
         dialog.setCancelable(false);
         dialog.show();
+
+        final JsonObject info = new JsonObject();
+        info.addProperty("name",name);
+        info.addProperty("content",content);
+        info.addProperty("code",code);
+        info.addProperty("contentID",contentID);
+
+
 
 
         new Thread(new Runnable() {

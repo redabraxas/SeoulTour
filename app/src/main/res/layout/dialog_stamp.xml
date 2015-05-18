@@ -14,5 +14,6 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:id="@+id/imageStamp"
+        android:src="@drawable/stampgray"
         android:layout_gravity="center_horizontal" />
 </LinearLayout>
