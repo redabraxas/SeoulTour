@@ -11,7 +11,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -178,7 +177,6 @@ public class ProgressActivity extends Activity {
         @Override
         protected void onPostExecute(String result) {
             totalNum = 0;
-            String[] tag = {"contenttypeid"};
 
             try {
                 // 파서 생성
@@ -189,18 +187,20 @@ public class ProgressActivity extends Activity {
 
                 // 이벤트 가져오기
                 int eventType = xpp.getEventType();
-                String contentTypeID = "";
 
                 while (eventType != XmlPullParser.END_DOCUMENT) {
                     if (eventType == XmlPullParser.START_DOCUMENT) {
                         ;
                     } else if (eventType == XmlPullParser.START_TAG) {
                         String tag_name = xpp.getName();
-                        if (tag_name.equals(tag[0])) {
+                        if (tag_name.equals("contenttypeid")) {
                             totalNum++;
                         }
                     } else if (eventType == XmlPullParser.TEXT) {
-                        ;
+                        String contentTypeID = xpp.getText();
+                        if(contentTypeID.equals("39") || contentTypeID.equals("28")){
+                            totalNum--;
+                        }
                     } else if (eventType == XmlPullParser.END_TAG) {
                         ;
                     }
