@@ -91,16 +91,20 @@ public class ProgressActivity extends Activity {
 
                             dialog.dismiss();
 
+                            dialog = new ProgressDialog(ProgressActivity.this);
+                            dialog.setMessage("관광지 수를 합산하는 중입니다...");
+                            dialog.setIndeterminate(true);
+                            dialog.setCancelable(false);
+                            dialog.show();
+
                             for(int i=0; i<jsonElements.size(); i++) {
                                 JsonObject deal = (JsonObject) jsonElements.get(i);
                                 int count = (deal.get("count")).getAsInt();
                                 int code = (deal.get("districtCode")).getAsInt();
-                                String name="";
                                 if(code ==0){
-                                    name = "서울";
                                     stampSum = count;
                                 }else{
-                                    name = distList.get(code-1).getName();
+                                    String name = distList.get(code-1).getName();
                                     arrayList.add(new Item(code, name, count));
                                     loadTotalNum(code);
                                 }
@@ -135,6 +139,10 @@ public class ProgressActivity extends Activity {
     }
 
     void loadTotalNum(int code){
+
+
+
+
         String url;
         url = "http://api.visitkorea.or.kr/openapi/service/rest/KorService/";
         url += "areaBasedList?";
@@ -221,6 +229,7 @@ public class ProgressActivity extends Activity {
     }
 
     void init(){
+
         adepter = new ProgressAdapter(getApplicationContext(), R.layout.model_progress, arrayList);
 
         // 리스트 표현하기
@@ -233,6 +242,8 @@ public class ProgressActivity extends Activity {
     }
 
     void totalProgress(){
+
+        dialog.dismiss();
         int  totalSum = 0 ;
         for(int i=0; i<arrayList.size()-1; i++)
             totalSum += arrayList.get(i).getTotal();

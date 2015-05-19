@@ -76,7 +76,7 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
         setContentView(R.layout.activity_main);
 
 
-        Button btnProgress = (Button) findViewById(R.id.btnProgress);
+        TextView btnProgress = (TextView) findViewById(R.id.btnProgress);
         btnProgress.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -87,7 +87,7 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
         });
 
 
-        Button btnHome = (Button) findViewById(R.id.btnHome);
+        TextView btnHome = (TextView) findViewById(R.id.btnHome);
         btnHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
