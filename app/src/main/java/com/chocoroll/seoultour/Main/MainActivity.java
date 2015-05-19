@@ -166,7 +166,19 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
         } catch (Exception e) {
         }
 
-        makeDistrictMarker();
+        // 각 구에 마커찍기
+        for(int i=0; i<districtList.size(); i++){
+            District district = districtList.get(i);
+            LatLng pos = new LatLng(district.getMapx(), district.getMapy());
+            MarkerOptions options = new MarkerOptions();
+            options.position(pos);
+            options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+            options.title(district.getName());
+            options.snippet(district.getCode());
+            options.icon(BitmapDescriptorFactory.fromResource(R.drawable.district_marker));
+            map.addMarker(options);
+        }
+
 
 
         // 마커 클릭 리스너
@@ -190,23 +202,6 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
     }
 
 
-    void makeDistrictMarker(){
-        // 각 구에 마커찍기
-        for(int i=0; i<districtList.size(); i++){
-            District district = districtList.get(i);
-            LatLng pos = new LatLng(district.getMapx(), district.getMapy());
-            MarkerOptions options = new MarkerOptions();
-            options.position(pos);
-            options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-            options.title(district.getName());
-            options.snippet(district.getCode());
-            options.icon(BitmapDescriptorFactory.fromResource(R.drawable.district_marker));
-            map.addMarker(options);
-        }
-
-
-
-    }
 
     void setMapTourList(String code){
 
@@ -351,7 +346,8 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
                 boolean bSet = false;
                 String s_tag = "";
 
-                String contentID="", thumbnail = "", addr="", tel="", title="", contentTypeID="";
+                String contentID="", thumbnail = "", addr="", tel="", title="";
+                int contentTypeID=0;
                 Double mapx = 0.0, mapy=0.0;
 
 
@@ -399,7 +395,7 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
                                     title = data;
                                     break;
                                 case "contenttypeid":
-                                    contentTypeID = data;
+                                    contentTypeID = Integer.valueOf(data);
                                     break;
                                 default:
                                     break;
@@ -413,7 +409,11 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
 
                         String tag_name=xpp.getName();
                         if(tag_name.equals("item")){
-                            tourList.add(new Tour(title, thumbnail,mapy,mapx, contentID, contentTypeID, addr, tel));
+
+                            if(contentTypeID != 39 && contentTypeID != 28){
+                                tourList.add(new Tour(title, thumbnail,mapy,mapx, contentID, contentTypeID, addr, tel));
+                            }
+
                         }
 
                     }
@@ -427,7 +427,6 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
 
 
             map.clear();
-            makeDistrictMarker();
 
             // 각 관광지에에 마커찍기
             for(int i=0; i<tourList.size(); i++){

@@ -8,12 +8,12 @@ public class Tour {
     private String thumbnail;
     private double mapx, mapy;
     private String contentID;
-    private String contentTypeID;
+    private int contentTypeID;
     private String overView;
     private String addr;
     private String tel;
 
-    public Tour(String name, String thumbnail, double mapx, double mapy, String contentID, String contentTypeID, String addr, String tel){
+    public Tour(String name, String thumbnail, double mapx, double mapy, String contentID, int contentTypeID, String addr, String tel){
         this.name = name;
         this.thumbnail =thumbnail;
         this.mapx = mapx;
@@ -56,7 +56,7 @@ public class Tour {
         return addr;
     }
 
-    public String getContentTypeID() {
+    public int getContentTypeID() {
         return contentTypeID;
     }
 
