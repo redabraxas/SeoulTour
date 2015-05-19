@@ -6,7 +6,7 @@ package com.chocoroll.seoultour.Model;
 public class Item {
     private String  name;
     private int  code;
-    private int     cnt;
+    private int  cnt;
 
 
     public Item(int code, String name, int cnt){

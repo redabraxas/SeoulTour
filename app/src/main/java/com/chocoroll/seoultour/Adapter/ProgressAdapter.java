@@ -38,7 +38,6 @@ public class ProgressAdapter extends ArrayAdapter<Item> {
         Item temp = items.get(position);
         if(temp != null)
         {
-
             TextView gu = (TextView) v.findViewById(R.id.gu);
             ProgressBar pb = (ProgressBar) v.findViewById(R.id.bar);
             TextView barNum = (TextView) v.findViewById(R.id.barNum);
@@ -51,8 +50,6 @@ public class ProgressAdapter extends ArrayAdapter<Item> {
                 pb.setProgress(num);
                 barNum.setText(temp.getCnt() + " / total");
             }
-
-
         }
         return v;
     }

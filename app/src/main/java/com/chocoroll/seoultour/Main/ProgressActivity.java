@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.ListView;
@@ -93,8 +92,6 @@ public class ProgressActivity extends Activity {
                                     name = distList.get(code-1).getName();
                                     arrayList.add(new Item(code, name, count));
                                 }
-
-
 
                                 Log.e("distList",name);
                             }
