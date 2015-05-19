@@ -1,5 +1,6 @@
 package com.chocoroll.seoultour.Main;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -10,6 +11,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -30,12 +32,14 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 
-public class ProgressActivity extends ActionBarActivity {
+public class ProgressActivity extends Activity {
     ProgressDialog dialog;
-    ArrayList<Item> arrayList;
+    ArrayList<Item> arrayList= new ArrayList<Item>();
     ProgressAdapter adepter;
     ArrayList<District> distList;
     ListView listView;
+
+    int stampSum = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,14 +84,20 @@ public class ProgressActivity extends ActionBarActivity {
                             for(int i=0; i<jsonElements.size(); i++) {
                                 JsonObject deal = (JsonObject) jsonElements.get(i);
                                 int count = (deal.get("count")).getAsInt();
-                                String code = (deal.get("districtCode")).getAsString();
-                                String name = distList.get(Integer.valueOf(code)-1).getName();
+                                int code = (deal.get("districtCode")).getAsInt();
+                                String name="";
+                                if(code ==0){
+                                    name = "서울";
+                                    stampSum = count;
+                                }else{
+                                    name = distList.get(code-1).getName();
+                                    arrayList.add(new Item(code, name, count));
+                                }
 
-                                //String str = "mydata : " + count + " " + code + " " + name;
-                                //Log.e("mydebug", str);
-                                arrayList.add(new Item(code, name, count));
+
+
+                                Log.e("distList",name);
                             }
-                            // 전체는  districtCode =0   / districtName= 전체    이렇게 보내겟음.
                             init();
                             totalProgress();
 
@@ -121,33 +131,24 @@ public class ProgressActivity extends ActionBarActivity {
     }
 
     void init(){
-        arrayList = new ArrayList<Item>();
-        // test
-        arrayList.add( new Item("15", "seocho", 8));        // code, name, cnt
-
-        adepter = new ProgressAdapter(getApplicationContext(), R.layout.procress_row, arrayList);
+        adepter = new ProgressAdapter(getApplicationContext(), R.layout.model_progress, arrayList);
 
         // 리스트 표현하기
         listView = (ListView)findViewById(android.R.id.list);
         listView.setAdapter(adepter);
 
         // 리스트 디자인
-        listView.setDivider(new ColorDrawable(Color.BLUE)); // 리스트간 경계선
-        listView.setDividerHeight(5);
+        listView.setDivider(new ColorDrawable(Color.LTGRAY)); // 리스트간 경계선
+        listView.setDividerHeight(1);
     }
 
     void totalProgress(){
-        int stampSum = 0, totalSum = 0 ;
-        //totalSum =
-        for(int i=0; i<arrayList.size(); i++)
-        {
-            stampSum += Integer.valueOf(arrayList.get(i).getCnt());      // 도장 찍힌 개수 카운트
-        }
+        int  totalSum = 120 ;
 
         ProgressBar totalBar = (ProgressBar)findViewById(R.id.totalBar);
-        totalBar.setProgress((int)(stampSum / totalSum * 100));
+        totalBar.setProgress(stampSum / totalSum * 100);
 
         TextView tx = (TextView)findViewById(R.id.totalBarText);
-        tx.setText(stampSum + " / " + totalSum);
+        tx.setText(stampSum  + " / " + totalSum);
     }
 }

@@ -32,12 +32,13 @@ public class ProgressAdapter extends ArrayAdapter<Item> {
         View v = convertView;   // 각 아이템이 늘어날때, 계속 뷰로 늘리지 않고 swap해준다.
         if(v == null){
             LayoutInflater vi = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            v = vi.inflate(R.layout.procress_row, null);
+            v = vi.inflate(R.layout.model_progress, null);
         }
 
         Item temp = items.get(position);
         if(temp != null)
         {
+
             TextView gu = (TextView) v.findViewById(R.id.gu);
             ProgressBar pb = (ProgressBar) v.findViewById(R.id.bar);
             TextView barNum = (TextView) v.findViewById(R.id.barNum);
@@ -48,9 +49,10 @@ public class ProgressAdapter extends ArrayAdapter<Item> {
             if( pb != null ) {
                 int num = temp.getCnt() / 20 * 100;     // 여기서 20에 totalNum이 들어가야 함
                 pb.setProgress(num);
-
                 barNum.setText(temp.getCnt() + " / total");
             }
+
+
         }
         return v;
     }

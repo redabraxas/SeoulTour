@@ -17,27 +17,31 @@
 
     <!--전체-->
     <LinearLayout
+        android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="0sp"
         android:layout_weight="1"
         android:orientation="horizontal">
         <TextView
+            android:layout_weight="1"
+            android:layout_width="0dp"
             android:text="Seoul"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingRight="20dp"/>
+            android:gravity="center"/>
         <ProgressBar
             android:id="@+id/totalBar"
             style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
+            android:layout_weight="4"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:max="100"
             android:progress="10"/>
         <TextView
             android:id="@+id/totalBarText"
-            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingRight="20dp"/>
+            android:gravity="center"/>
     </LinearLayout>
 
 

@@ -5,11 +5,11 @@ package com.chocoroll.seoultour.Model;
  */
 public class Item {
     private String  name;
-    private String  code;
+    private int  code;
     private int     cnt;
 
 
-    public Item(String code, String name, int cnt){
+    public Item(int code, String name, int cnt){
         this.code = code;
         this.name = name;
         this.cnt = cnt;
@@ -23,7 +23,7 @@ public class Item {
         return cnt;
     }
 
-    public String getCode() {
+    public int getCode() {
         return code;
     }
 }
