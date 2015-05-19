@@ -1,10 +1,7 @@
 package com.chocoroll.seoultour.Main;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -12,8 +9,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -27,7 +22,6 @@ import com.chocoroll.seoultour.Model.District;
 import com.chocoroll.seoultour.Model.Tour;
 import com.chocoroll.seoultour.Adapter.TourAdapter;
 import com.chocoroll.seoultour.R;
-import com.chocoroll.seoultour.Retrofit.Retrofit;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -36,7 +30,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -51,13 +44,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
-
-import retrofit.Callback;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 
 
 public class MainActivity extends Activity implements TourAdapter.tourAdapterListner{
@@ -181,6 +168,7 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
             options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
             options.title(district.getName());
             options.snippet(district.getCode());
+            options.icon(BitmapDescriptorFactory.fromResource(R.drawable.district_marker));
             map.addMarker(options);
         }
 
@@ -224,7 +212,7 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
         //기기 OS, 프로그램 이름
         url += "&MobileOS=ETC&MobileApp=Testing";
 
-        new DownloadWebPageTask().execute(url);
+        new GetTourInfoTask().execute(url);
 
 
 
@@ -296,7 +284,7 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
 
 
     // AsyncTask클래스  // html문서 파싱하기 _ 소스 text로 얻어오기
-    public class DownloadWebPageTask extends AsyncTask<String, Void, String> {
+    public class GetTourInfoTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {   // 메인 실행 단계
             try {
@@ -435,6 +423,7 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
                 options.position(pos);
                 options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
                 options.title(tour.getName());
+                options.icon(BitmapDescriptorFactory.fromResource(R.drawable.tour_marker));
                 map.addMarker(options);
 
                 String url;
@@ -443,7 +432,7 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
                 url += "&contentId=" + tour.getContentID() + "&overviewYN=Y";
                 url += "&MobileOS=ETC&MobileApp=Testing";
 
-                new DownloadWebPageTask2().execute(url, String.valueOf(i));
+                new GetTourOverviewTask().execute(url, String.valueOf(i));
 
             }
 
@@ -461,7 +450,7 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
 
         }
     }
-    public class DownloadWebPageTask2 extends AsyncTask<String, Void, String> {
+    public class GetTourOverviewTask extends AsyncTask<String, Void, String> {
         int index = 0;
 
         @Override
