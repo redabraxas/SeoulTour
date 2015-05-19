@@ -18,9 +18,9 @@ import android.widget.ListView;
 import android.widget.SlidingDrawer;
 import android.widget.TextView;
 
+import com.chocoroll.seoultour.Adapter.TourAdapter;
 import com.chocoroll.seoultour.Model.District;
 import com.chocoroll.seoultour.Model.Tour;
-import com.chocoroll.seoultour.Adapter.TourAdapter;
 import com.chocoroll.seoultour.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -79,6 +79,7 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, ProgressActivity.class);
+                intent.putParcelableArrayListExtra("districtList", districtList);
                 startActivity(intent);
             }
         });
