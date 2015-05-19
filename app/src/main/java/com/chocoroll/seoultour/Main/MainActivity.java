@@ -1,10 +1,7 @@
 package com.chocoroll.seoultour.Main;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -12,8 +9,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -23,11 +18,10 @@ import android.widget.ListView;
 import android.widget.SlidingDrawer;
 import android.widget.TextView;
 
+import com.chocoroll.seoultour.Adapter.TourAdapter;
 import com.chocoroll.seoultour.Model.District;
 import com.chocoroll.seoultour.Model.Tour;
-import com.chocoroll.seoultour.Adapter.TourAdapter;
 import com.chocoroll.seoultour.R;
-import com.chocoroll.seoultour.Retrofit.Retrofit;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -36,7 +30,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -51,13 +44,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
-
-import retrofit.Callback;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 
 
 public class MainActivity extends Activity implements TourAdapter.tourAdapterListner{
@@ -92,6 +79,7 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, ProgressActivity.class);
+                intent.putParcelableArrayListExtra("districtList", districtList);
                 startActivity(intent);
             }
         });
