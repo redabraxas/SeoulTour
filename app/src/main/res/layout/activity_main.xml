@@ -35,6 +35,14 @@
                 android:text="@string/app_name" />
         </FrameLayout>
 
+
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:text="홈"
+            android:id="@+id/btnHome"
+            />
+
         <Button
             android:layout_width="100dp"
             android:layout_height="50dp"
@@ -125,12 +133,14 @@
                             android:gravity="center"
                             android:text="어디구 무슨관광지"
                             android:textSize="20dp"
+                            android:padding="5dp"
                             android:id="@+id/tourTitle" />
 
                         <LinearLayout
                             android:orientation="horizontal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:padding="5dp"
                             >
 
                             <Button
@@ -152,6 +162,11 @@
                     </LinearLayout>
 
                 </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="3dp"
+                    android:background="#ffffba2a"></LinearLayout>
 
                 <ScrollView
                     android:orientation="vertical"

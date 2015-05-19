@@ -64,6 +64,9 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
     Button slideHandleButton;
 
 
+    boolean homeFlag = true;
+
+
 
 
 
@@ -80,6 +83,18 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
                 Intent intent = new Intent(MainActivity.this, ProgressActivity.class);
                 intent.putParcelableArrayListExtra("districtList", districtList);
                 startActivity(intent);
+            }
+        });
+
+
+        Button btnHome = (Button) findViewById(R.id.btnHome);
+        btnHome.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                homeFlag = true;
+                map.clear();
+                mapInit();
+
             }
         });
 
@@ -154,6 +169,23 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
         makeDistrictMarker();
 
 
+        // 마커 클릭 리스너
+        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+
+            public boolean onMarkerClick(Marker marker) {
+
+                homeFlag = false;
+                String code = marker.getSnippet();
+                setMapTourList(code);
+
+                // 마커 위치로 이동하며 확대
+                LatLng pos = new LatLng(marker.getPosition().latitude, marker.getPosition().longitude);
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 18));
+                return false;
+            }
+        });
+
+
         dialog.dismiss();
     }
 
@@ -174,20 +206,6 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
 
 
 
-        // 마커 클릭 리스너
-        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-
-            public boolean onMarkerClick(Marker marker) {
-
-                String code = marker.getSnippet();
-                setMapTourList(code);
-
-                // 마커 위치로 이동하며 확대
-                LatLng pos = new LatLng(marker.getPosition().latitude, marker.getPosition().longitude);
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 18));
-                return false;
-            }
-        });
     }
 
     void setMapTourList(String code){
@@ -438,6 +456,19 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
 
 
 
+            // 마커 클릭 리스너
+            map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+
+                public boolean onMarkerClick(Marker marker) {
+
+                    // 마커 위치로 이동하며 확대
+                    LatLng pos = new LatLng(marker.getPosition().latitude, marker.getPosition().longitude);
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 18));
+                    return false;
+                }
+            });
+
+
             listView.setVisibility(View.VISIBLE);
             listView.setAdapter(mAdapter);
             dialog.dismiss();
@@ -530,10 +561,14 @@ public class MainActivity extends Activity implements TourAdapter.tourAdapterLis
     public void onBackPressed() {
         if (slidingDrawer.isOpened()) {
             slidingDrawer.close ();
-        } else {
-
+        } else if(!homeFlag){
+            map.clear();
+            mapInit();
+        }else{
             super.onBackPressed();
         }
+
+
     }
 
 

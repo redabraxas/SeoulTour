@@ -78,8 +78,23 @@ public class GuestBookDialog extends Dialog {
                 String name = ((EditText)findViewById(R.id.editname)).getText().toString();
                 String content = ((EditText)findViewById(R.id.editcontent)).getText().toString();
 
-                sendGuestBook(name, content);
+                if(name.equals("") || content.equals("")){
 
+                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                    builder.setTitle("작성 실패")        // 제목 설정
+                            .setMessage("모든 필드를 입력해주세요")        // 메세지 설정
+                            .setCancelable(false)        // 뒤로 버튼 클릭시 취소 가능 설정
+                            .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                // 확인 버튼 클릭시 설정
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                }
+                            });
+
+                    AlertDialog dialog = builder.create();    // 알림창 객체 생성
+                    dialog.show();    // 알림창 띄우기
+                }else{
+                    sendGuestBook(name, content);
+                }
 
 
             }
@@ -137,7 +152,7 @@ public class GuestBookDialog extends Dialog {
                         @Override
                         public void failure(RetrofitError retrofitError) {
                             dialog.dismiss();
-                            Log.e("error", retrofitError.getCause().toString());
+
                             AlertDialog.Builder builder = new AlertDialog.Builder(context);
                             builder.setTitle("네트워크가 불안정합니다.")        // 제목 설정
                                     .setMessage("네트워크를 확인해주세요")        // 메세지 설정
