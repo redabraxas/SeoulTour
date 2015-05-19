@@ -1,6 +1,7 @@
 package com.chocoroll.seoultour.Adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,7 +39,6 @@ public class ProgressAdapter extends ArrayAdapter<Item> {
         Item temp = items.get(position);
         if(temp != null)
         {
-
             TextView gu = (TextView) v.findViewById(R.id.gu);
             ProgressBar pb = (ProgressBar) v.findViewById(R.id.bar);
             TextView barNum = (TextView) v.findViewById(R.id.barNum);
@@ -47,12 +47,12 @@ public class ProgressAdapter extends ArrayAdapter<Item> {
                 gu.setText( temp.getName());
             }
             if( pb != null ) {
-                int num = temp.getCnt() / 20 * 100;     // 여기서 20에 totalNum이 들어가야 함
+
+                int num = (int)((double)temp.getCnt() / temp.getTotal() * 100.0);
                 pb.setProgress(num);
-                barNum.setText(temp.getCnt() + " / total");
+                Log.e("progress", String.valueOf(num));
+                barNum.setText(temp.getCnt() + " / " + temp.getTotal());
             }
-
-
         }
         return v;
     }

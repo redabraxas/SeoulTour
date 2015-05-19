@@ -6,7 +6,8 @@ package com.chocoroll.seoultour.Model;
 public class Item {
     private String  name;
     private int  code;
-    private int     cnt;
+    private int  cnt;
+    private int  total;
 
 
     public Item(int code, String name, int cnt){
@@ -21,6 +22,14 @@ public class Item {
 
     public int getCnt() {
         return cnt;
+    }
+
+    public int getTotal() {
+        return total;
+    }
+
+    public void setTotal(int total) {
+        this.total = total;
     }
 
     public int getCode() {
