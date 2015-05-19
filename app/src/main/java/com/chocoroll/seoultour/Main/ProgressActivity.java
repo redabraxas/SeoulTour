@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -23,6 +24,16 @@ import com.chocoroll.seoultour.Retrofit.Retrofit;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserFactory;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 
 import retrofit.Callback;
@@ -37,8 +48,9 @@ public class ProgressActivity extends Activity {
     ProgressAdapter adepter;
     ArrayList<District> distList;
     ListView listView;
-
+    int totalNum = 0;
     int stampSum = 0;
+    int c = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,13 +103,9 @@ public class ProgressActivity extends Activity {
                                 }else{
                                     name = distList.get(code-1).getName();
                                     arrayList.add(new Item(code, name, count));
+                                    loadTotalNum(code);
                                 }
-
-                                Log.e("distList",name);
                             }
-                            init();
-                            totalProgress();
-
                         }
 
                         @Override
@@ -127,6 +135,91 @@ public class ProgressActivity extends Activity {
 
     }
 
+    void loadTotalNum(int code){
+        String url;
+        url = "http://api.visitkorea.or.kr/openapi/service/rest/KorService/";
+        url += "areaBasedList?";
+        url += "ServiceKey=gm3kVO0YC2KCvStmz2Ljk%2FRRhLwLNOdNcAuW%2Fdsv9uUOHAFWDyFcmwAfXiLbJa4lmQQ5D778Q619jgPmG8kdNg%3D%3D";
+        //서울(areaCode=1)과 시군구코드정보(sigunguCode) 입력
+        url += "&areaCode=1&sigunguCode="+code+"&numOfRows=30&pageNo=1";
+        url += "&MobileOS=ETC&MobileApp=Testing";
+
+        new GetTourInfoTask().execute(url);
+    }
+
+    public class GetTourInfoTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... urls) {   // 메인 실행 단계
+            try {
+                return (String) downloadUrl((String) urls[0]);
+            } catch (IOException e) {
+                return "다운로드 실패";
+            }
+        }
+
+        private String downloadUrl(String myurl) throws IOException {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(myurl);   // 입력된 url
+                conn = (HttpURLConnection) url.openConnection(); // 리소스 연결
+                BufferedInputStream buf = new BufferedInputStream(conn.getInputStream());   // byte단위로 저장
+                BufferedReader bufreader = new BufferedReader(new InputStreamReader(buf, "utf-8")); // 문자 단위로 변환
+                String line = null;
+                String page = "";
+                while ((line = bufreader.readLine()) != null) {   // 문자를 줄단위로
+                    page += line;
+                }
+                return page;
+            } finally {
+                conn.disconnect();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            totalNum = 0;
+            String[] tag = {"contenttypeid"};
+
+            try {
+                // 파서 생성
+                XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+                factory.setNamespaceAware(true);
+                XmlPullParser xpp = factory.newPullParser();
+                xpp.setInput(new StringReader(result));
+
+                // 이벤트 가져오기
+                int eventType = xpp.getEventType();
+                String contentTypeID = "";
+
+                while (eventType != XmlPullParser.END_DOCUMENT) {
+                    if (eventType == XmlPullParser.START_DOCUMENT) {
+                        ;
+                    } else if (eventType == XmlPullParser.START_TAG) {
+                        String tag_name = xpp.getName();
+                        if (tag_name.equals(tag[0])) {
+                            totalNum++;
+                        }
+                    } else if (eventType == XmlPullParser.TEXT) {
+                        ;
+                    } else if (eventType == XmlPullParser.END_TAG) {
+                        ;
+                    }
+                    eventType = xpp.next();
+                }
+            } catch (Exception e) {
+            }
+
+            arrayList.get(c).setTotal(totalNum);
+            c+=1;
+
+            if( c > arrayList.size() -1)
+            {
+                init();
+                totalProgress();
+            }
+        }
+    }
+
     void init(){
         adepter = new ProgressAdapter(getApplicationContext(), R.layout.model_progress, arrayList);
 
@@ -140,7 +233,9 @@ public class ProgressActivity extends Activity {
     }
 
     void totalProgress(){
-        int  totalSum = 120 ;
+        int  totalSum = 0 ;
+        for(int i=0; i<arrayList.size()-1; i++)
+            totalSum += arrayList.get(i).getTotal();
 
         ProgressBar totalBar = (ProgressBar)findViewById(R.id.totalBar);
         totalBar.setProgress(stampSum / totalSum * 100);
